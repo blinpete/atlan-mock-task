@@ -4,7 +4,7 @@ import { myFaker } from './__faker'
 import { MockSettings } from './__settings'
 import { wait } from './__utils'
 
-const __reqMap = new Map<string, { total: number; remain: number }>()
+const __reqMap = new Map<string, { total: number; remain: number; seed: number }>()
 
 export async function request<T>(options: RequestOptions, randomItem: () => T): Response<T> {
   if (MockSettings.timeout) {
@@ -33,9 +33,15 @@ export async function request<T>(options: RequestOptions, randomItem: () => T): 
     resLength = {
       total: newLength,
       remain: newLength,
+      seed: myFaker.datatype.number({ min: 0, max: 1000 }),
     }
 
     __reqMap.set(options.query, resLength)
+  }
+
+  // initial call or chunk request?
+  if (!options.from) {
+    resLength.remain = resLength.total
   }
 
   let arrLength = resLength.remain
@@ -44,12 +50,16 @@ export async function request<T>(options: RequestOptions, randomItem: () => T): 
     arrLength = options.limit
   }
 
+  myFaker.seed(resLength.seed + resLength.remain)
+
   const arr = Array.from({
     length: arrLength,
   }).map(randomItem)
 
   resLength.remain -= arrLength
-  __reqMap.set(options.query, resLength)
+
+  // not necessary, just relying on mutation
+  // __reqMap.set(options.query, resLength)
 
   const keys = (arr[0] ? Object.keys(arr[0]) : []) as (keyof T)[]
 
