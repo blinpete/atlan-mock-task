@@ -27,7 +27,7 @@ export async function request<T>(options: RequestOptions, randomItem: () => T): 
     const lengthFromQuery = parseInt(options.query)
 
     if (!isNaN(lengthFromQuery)) {
-      newLength = lengthFromQuery
+      newLength = Math.min(lengthFromQuery, MockSettings.ResponseSizeMax)
     }
 
     resLength = {
