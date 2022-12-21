@@ -9,7 +9,7 @@ const props = withDefaults(
     items: Item[]
     keys: string[]
     trackBottom?: boolean
-    // exhausted: boolean
+    exhausted: boolean
   }>(),
   { trackBottom: true }
 )
@@ -19,6 +19,11 @@ const emit = defineEmits<{
 }>()
 
 const reactiveItems = computed(() => props.items)
+
+watch(reactiveItems, (next, prev) => {
+  console.log('🚀 | watch | reactiveItems')
+  scrollTo(0)
+})
 
 const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(reactiveItems, {
   itemHeight: 30,
@@ -71,7 +76,7 @@ if (props.trackBottom) {
           </div>
 
           <!-- visibility observer -->
-          <div class="bottom">
+          <div class="bottom" v-if="!exhausted">
             <div class="bottom__observer" ref="bottomRef"></div>
             <slot name="bottom" />
           </div>

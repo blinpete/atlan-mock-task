@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { ApiClient } from '@/api'
 import { ApiError } from '@/api/error'
-import type { Item } from '@/api/types'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import VirtualTable from '../components/VirtualTable.vue'
 import BaseSpinner from '../components/BaseSpinner.vue'
+import HistoryBar from '../components/HistoryBar.vue'
+import { useStoreHistory } from '@/stores/history'
+import { storeToRefs } from 'pinia'
 
-const query = ref('')
 const error = ref<ApiError | null>(null)
-const items = ref<Item[] | null>(null)
 
-const keys = ref<(keyof Item)[]>([])
+const { query, items, keys, lengthTotal } = storeToRefs(useStoreHistory())
+const { saveQuery } = useStoreHistory()
+
+const exhausted = computed(() => items.value.length === lengthTotal.value)
 
 async function onSubmit(e: Event) {
   const se = e as SubmitEvent
@@ -31,6 +34,8 @@ async function onSubmit(e: Event) {
   } else {
     items.value = response.data
     keys.value = response.keys
+    lengthTotal.value = response.length
+    saveQuery()
   }
 }
 
@@ -55,8 +60,10 @@ async function loadChunk() {
 </script>
 
 <template>
-  <main>
-    <form @submit.prevent="onSubmit">
+  <main class="main-layout">
+    <HistoryBar />
+
+    <form class="form" @submit.prevent="onSubmit">
       <label>
         <span>SQL query</span>
         <input type="text" v-model.trim="query" required />
@@ -65,7 +72,13 @@ async function loadChunk() {
       <button type="submit">Run</button>
     </form>
 
-    <VirtualTable v-if="items?.length" :items="items" :keys="keys" @reach-end="loadChunk">
+    <VirtualTable
+      v-if="items?.length"
+      :items="items"
+      :keys="keys"
+      :exhausted="exhausted"
+      @reach-end="loadChunk"
+    >
       <template #bottom>
         <BaseSpinner />
       </template>
@@ -73,3 +86,24 @@ async function loadChunk() {
     <div v-else>No results for your query</div>
   </main>
 </template>
+
+<style>
+.main-layout {
+  display: grid;
+  grid-template-columns: 12em auto;
+  gap: 1em;
+}
+.HistoryBar {
+  grid-column: 1;
+  grid-row: span 2;
+}
+
+.form,
+.table {
+  grid-column: 2;
+}
+
+.table {
+  grid-row: 2;
+}
+</style>
