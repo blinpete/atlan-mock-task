@@ -1,8 +1,7 @@
 import type { API, Task } from '../types'
 import { myFaker } from './__faker'
-import { request } from './__request'
 
-function randomTask(): Task {
+export function randomTask(): Task {
   return {
     id: myFaker.datatype.uuid(),
     assignee: myFaker.name.fullName(),
@@ -10,6 +9,3 @@ function randomTask(): Task {
     completed: myFaker.datatype.boolean(),
   }
 }
-
-// POST /api/users
-export const getTasks: API['getTasks'] = options => request(options, randomTask)

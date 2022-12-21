@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ApiClient } from '@/api'
 import { ApiError } from '@/api/error'
-import type { API, Post } from '@/api/types'
+import type { Item } from '@/api/types'
 import { ref } from 'vue'
 import VirtualTable from '../components/VirtualTable.vue'
 import BaseSpinner from '../components/BaseSpinner.vue'
 
 const query = ref('')
 const error = ref<ApiError | null>(null)
-const posts = ref<Post[] | null>(null)
+const items = ref<Item[] | null>(null)
 
-const keys = ref<(keyof Post)[]>([])
+const keys = ref<(keyof Item)[]>([])
 
 async function onSubmit(e: Event) {
   const se = e as SubmitEvent
@@ -23,28 +23,28 @@ async function onSubmit(e: Event) {
 
   error.value = null
 
-  const response = await ApiClient.getPosts({ query: query.value, limit: 40 })
+  const response = await ApiClient.getData({ query: query.value, limit: 40 })
   console.log('🚀 | onSubmit | response', response)
 
   if (response instanceof ApiError) {
     error.value = response
   } else {
-    posts.value = response.data
+    items.value = response.data
     keys.value = response.keys
   }
 }
 
 async function loadChunk() {
-  if (posts.value && posts.value.length) {
-    const lastPost = posts.value[posts.value.length - 1]
+  if (items.value && items.value.length) {
+    const lastPost = items.value[items.value.length - 1]
 
-    const response = await ApiClient.getPosts({ query: query.value, from: lastPost.id, limit: 40 })
+    const response = await ApiClient.getData({ query: query.value, from: lastPost.id, limit: 40 })
     console.log('🚀 | onSubmit | response', response)
 
     if (response instanceof ApiError) {
       error.value = response
     } else {
-      posts.value.push(...response.data)
+      items.value.push(...response.data)
 
       if (response.keys.length) {
         keys.value = response.keys
@@ -65,7 +65,7 @@ async function loadChunk() {
       <button type="submit">Run</button>
     </form>
 
-    <VirtualTable v-if="posts?.length" :items="posts" :keys="keys" @reach-end="loadChunk">
+    <VirtualTable v-if="items?.length" :items="items" :keys="keys" @reach-end="loadChunk">
       <template #bottom>
         <BaseSpinner />
       </template>

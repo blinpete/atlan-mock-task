@@ -40,6 +40,8 @@ export type Task = {
 //   post: ['id', 'name', 'gender', 'age'],
 // }
 
+export type Item = { id: string } & Record<string, any>
+
 export type API = {
   getUsers: (options: RequestOptions) => Response<User>
   getPosts: (options: RequestOptions) => Response<Post>

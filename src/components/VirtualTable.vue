@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useVirtualList, useIntersectionObserver } from '@vueuse/core'
 
 type Item = { id: string } & Record<string, any>
@@ -18,7 +18,9 @@ const emit = defineEmits<{
   (event: 'reach-end'): void
 }>()
 
-const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(props.items, {
+const reactiveItems = computed(() => props.items)
+
+const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(reactiveItems, {
   itemHeight: 30,
   overscan: 2,
 })

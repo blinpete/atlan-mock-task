@@ -1,12 +1,11 @@
-import type { API } from './types'
+import type { RequestOptions } from './types'
+import { request } from './mocks/request'
 
-import { getUsers } from './mocks/users'
-import { getPosts } from './mocks/posts'
-import { getTasks } from './mocks/tasks'
+function getData(options: RequestOptions) {
+  return request(options)
+}
 
 // mock API
-export const ApiClient: API = {
-  getUsers,
-  getPosts,
-  getTasks,
+export const ApiClient = {
+  getData,
 }
