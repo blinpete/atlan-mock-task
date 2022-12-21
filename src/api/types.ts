@@ -20,14 +20,13 @@ export type User = {
 export type Post = {
   id: ID
   author: string
-  title: string
+  // title: string
   body: string
 }
 
 export type Task = {
   id: ID
   assignee: string
-  reviewer: string
   completed: boolean
 }
 

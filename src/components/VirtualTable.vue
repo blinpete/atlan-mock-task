@@ -1,6 +1,37 @@
+<template>
+  <div class="table" ref="tableRef">
+    <div class="thead" :style="{ gridTemplateColumns: gridColumnsStyle }">
+      <div class="th" v-for="key in keys" :key="key">{{ key }}</div>
+    </div>
+    <div class="tbody">
+      <div v-bind="containerProps" class="vlist">
+        <div v-bind="wrapperProps">
+          <div
+            v-for="{ index, data } in list"
+            :key="index"
+            class="row"
+            :style="{
+              height: `${data.height}px`,
+              gridTemplateColumns: gridColumnsStyle,
+            }"
+          >
+            <div class="td" v-for="key in keys" :key="key">{{ data[key] }}</div>
+          </div>
+
+          <!-- visibility observer -->
+          <div class="bottom" v-if="!exhausted">
+            <div class="bottom__observer" ref="bottomRef"></div>
+            <slot name="bottom" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
-import { useVirtualList, useIntersectionObserver } from '@vueuse/core'
+import { useVirtualList, useIntersectionObserver, useResizeObserver } from '@vueuse/core'
 
 type Item = { id: string } & Record<string, any>
 
@@ -25,9 +56,19 @@ watch(reactiveItems, (next, prev) => {
   scrollTo(0)
 })
 
+const vlistWidth = ref(visualViewport?.width! * 0.7)
+
+const tableRef = ref(null)
+useResizeObserver(tableRef, entries => {
+  const entry = entries[0]
+  if (!entry) return
+
+  vlistWidth.value = entry.contentRect.width
+})
+
 const { list, containerProps, wrapperProps, scrollTo } = useVirtualList(reactiveItems, {
   itemHeight: 30,
-  overscan: 2,
+  overscan: 10,
 })
 
 const bottomRef = ref(null)
@@ -49,60 +90,51 @@ if (props.trackBottom) {
   })
 }
 
-// const handleScrollTo = () => {
-//   scrollTo(index.value)
-// }
+const gridColumnsStyle = computed(() => {
+  console.log('🚀 | gridColumnsStyle | width', vlistWidth.value)
+
+  let w = vlistWidth.value / props.keys.length
+  console.log('🚀 | gridColumnsStyle | w', w)
+
+  if (w < 100) return `repeat(${props.keys.length}, 100px)`
+
+  return `repeat(${props.keys.length}, 1fr)`
+})
 </script>
-
-<template>
-  <div class="table">
-    <div class="thead">
-      <div class="th" v-for="key in keys" :key="key">{{ key }}</div>
-    </div>
-    <div class="tbody">
-      <div v-bind="containerProps" class="vlist h-300px overflow-auto p-2 bg-gray-500/5 rounded">
-        <div v-bind="wrapperProps">
-          <div
-            v-for="{ index, data } in list"
-            :key="index"
-            class="row border border-$c-divider mb-2"
-            :style="{
-              height: `${data.height}px`,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }"
-          >
-            <div class="td" v-for="key in keys" :key="key">{{ data[key] }}</div>
-          </div>
-
-          <!-- visibility observer -->
-          <div class="bottom" v-if="!exhausted">
-            <div class="bottom__observer" ref="bottomRef"></div>
-            <slot name="bottom" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style>
 .bottom {
-  background-color: antiquewhite;
   padding: 1em;
 }
 
 .table {
   border: 2px solid black;
-  margin: 1em 1em;
+  display: flex;
+  flex-direction: column;
+
+  height: min-content;
+
+  overflow-x: auto;
+}
+.thead {
+  flex: 0 0 auto;
+}
+.tbody {
+  flex: 1 1 auto;
+}
+
+.thead,
+.tbody {
+  min-width: fit-content;
 }
 
 .thead,
 .row {
-  border-bottom: 2px solid darkgrey;
-
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+}
+
+.row:not(:last-child) {
+  border-bottom: 2px solid darkgrey;
 }
 
 .thead {
@@ -112,13 +144,13 @@ if (props.trackBottom) {
 }
 
 .thead .th {
-  padding-top: 0.4em;
-  padding-bottom: 0.4em;
+  --pad: 0.5em;
+  padding-top: var(--pad);
+  padding-bottom: var(--pad);
 }
 
-.tbody .vlist {
-  height: 60vh;
-  overflow: auto;
+.vlist {
+  height: 70vh;
 }
 
 .th,

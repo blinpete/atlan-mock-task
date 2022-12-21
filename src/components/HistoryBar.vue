@@ -1,5 +1,6 @@
 <template>
   <div class="HistoryBar">
+    <h1 class="title">History</h1>
     <ul class="list">
       <li
         class="entry"
@@ -7,7 +8,7 @@
         :key="key"
         @click="() => storeHistory.setQuery(key)"
       >
-        <span> {{ key }} ({{ items.length }} / {{ lengthTotal }}) </span>
+        <div class="query">{{ key }} ({{ items.length }} / {{ lengthTotal }})</div>
         <button class="btn-icon" @click.stop="() => storeHistory.dropCache(key)">&times;</button>
       </li>
     </ul>
@@ -22,25 +23,57 @@ const storeHistory = useStoreHistory()
 
 <style scoped>
 .HistoryBar {
-  background-color: bisque;
+  background-color: hsl(242deg 80% 38%);
+  color: #ddf;
+}
+
+.title {
+  font-weight: 800;
+  text-align: center;
+  margin-top: 2rem;
 }
 
 .list {
   list-style: none;
-  padding: 0.3em;
+  padding: 0.5em;
 
   display: flex;
   flex-direction: column-reverse;
-  gap: 0.1em;
+  gap: 0.25em;
 }
 
 .entry {
-  background-color: burlywood;
+  display: flex;
+  gap: 0.2em;
+}
+
+.query {
+  max-height: 4em;
+  overflow: hidden;
+}
+
+.query,
+.btn-icon {
+  cursor: pointer;
   padding: 0.15em 0.4em;
+
   border-radius: 0.25em;
+  background-color: hsl(242deg 46% 50%);
+}
+.query {
+  flex: 1 1 auto;
+  font-weight: 500;
+}
+
+.btn-icon {
+  border: none;
+  font-weight: 700;
+  color: currentColor;
   cursor: pointer;
 }
-.entry:hover {
+
+.query:hover,
+.btn-icon:hover {
   opacity: 0.7;
 }
 </style>
