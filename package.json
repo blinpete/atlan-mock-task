@@ -14,8 +14,7 @@
     "@vueuse/core": "^9.7.0",
     "normalize.css": "^8.0.1",
     "pinia": "^2.0.28",
-    "vue": "^3.2.45",
-    "vue-router": "^4.1.6"
+    "vue": "^3.2.45"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",

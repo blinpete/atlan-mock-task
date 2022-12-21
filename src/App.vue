@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import HomeView from './views/HomeView.vue'
 </script>
 
 <template>
   <header class="app-header">
     <h1>Atlan test</h1>
   </header>
-  <RouterView />
+  <HomeView />
 </template>
 
 <style scoped>
