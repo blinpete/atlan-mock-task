@@ -107,7 +107,7 @@ And it maps a query to fixed random seed for samples to be consistent
 between calls.
 
 
-## 2. Virtual table
+## 4. Virtual table
 
 I'm using `useVirtualList` from VueUse to virtualize the *tbody* part of the table.
 But this particular implementation uses wrappers around the target element,
@@ -131,7 +131,7 @@ type Props = {
   exhausted: boolean
 }
 ```
-## 3. `History` feature
+## 5. `History` feature
 
 I've picked Pinia for the project as a stare management solution because it's easy-to-use and modern.
 
