@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/f8a70bf8-49e3-4042-a1cb-45fa28a49d31/deploy-status)](https://app.netlify.com/sites/atlan-blinpete/deploys)
+
 # atlan-mock-task
 
 Mock task from [Atlan](https://atlan.com/).
