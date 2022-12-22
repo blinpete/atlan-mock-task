@@ -13,7 +13,7 @@
         class="link-repo"
         target="_blank"
         rel="noopener"
-        href="https://github.com/blinpete/atlan-test"
+        href="https://github.com/blinpete/atlan-mock-task"
         >source</a
       >
       <a
