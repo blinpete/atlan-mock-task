@@ -143,12 +143,19 @@ In Lighthouse the app hits only 61 points because of the FakerJS (2.5MB of minif
 
 With a real server it would hit 100 points.
 
+### Lighthouse perf score (with faker)
+
 ![](./page-load-metrics/Lighthouse-with-faker.png)
+
+### Lighthouse perf score (without faker)
 ![](./page-load-metrics/Lighthouse-without-faker.png)
 
 However in the more realistic tests (Chrome Performance insights) the page load is totaly ok:
 
+### Performance insights (with faker)
 ![](page-load-metrics/Perf-insights-with-faker.png)
+
+### Performance insights (without faker)
 ![](page-load-metrics/Perf-insights-without-faker.png)
 
 
