@@ -1,46 +1,155 @@
 # atlan-mock-task
 
-This template should help get you started developing with Vue 3 in Vite.
+Mock task from [Atlan](https://atlan.com/).
+Here's the original [statement](https://atlanhq.notion.site/Task-Atlan-Frontend-Engineer-80ca8e35cc694e31bfd6b415d328269c).
 
-## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+## Overview
 
-## Type Support for `.vue` Imports in TS
+This is an SQL query viewer:
+- it takes a query
+- sends it to the *fake server*
+- and displays the response (supporting unlimited amount of data due to list virtualization)
+- keeps a history of queries requested so that the user can switch between them
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
+It implements the best practices for working with large data sets:
+- virtual list render
+- and lazy data loading technique
 
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
+## 1. Decomposition
 
-1. Disable the built-in TypeScript Extension
-    1) Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-    2) Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
+Basic blocks:
+- **data source** and **API client** wrapping it
+- **input field** for SQL query
+- **table** component rendering the data
+- **tabs or dropdown** for switching between queries
 
-## Customize configuration
+The statement offers brownies for rendering large amount of rows. It brings 2 extra points:
+- the API must support **chunking mechanism** and provide large amount of data. So rather than use those CSVs we generate data of any size using fakerjs.
+- we have to **virtualize** the table (for example, using VueUse)
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
 
-## Project Setup
+## 2. Stack
 
-```sh
-npm install
+Scaffolding the project with `npm init vue@latest`.
+
+- [Vue 3](https://vuejs.org/) for rendering
+- [Typescript](https://www.typescriptlang.org/) (as always)
+- [Pinia](https://pinia.vuejs.org/) for state management
+- [VueUse](https://vueuse.org/) for having ready-to-go composables
+- [Faker](https://fakerjs.dev/) for mocking the server
+
+
+## 3. Mocking the server
+
+This part is a bit troublesome because usually in frontend we go to a backend team and take an API contract (OpenAPI or GraphQL scheme) to generate both API client and types.
+
+Now we have to do it manually.
+
+The server must provide chunking interface so I assume the following API:
+
+
+```ts
+
+type ID = string
+
+interface Identified {
+  id: ID
+}
+
+/**
+ * We don't need any validation on the client side,
+ * but even if we do it should run on the server.
+ * So we have no types regarding SQL tables on the front.
+ * The server owns all the data types, the client side knows
+ * nothing about SQL schemes actual tables and structures.
+ *
+ * That's why `Item` maps to values of type `any`.
+ *
+ * The only thing we require is `Identified` contract.
+*/
+type Item = Identified & Record<string, any>
+
+
+type Response<T> = Promise<ResponseSqlSelect<T> | ApiError>
+
+type ResponseSqlSelect<T> = {
+  /**
+   * This is a total length of the data matching a given query.
+   * The server should provide it because we load data by chunks
+   * and therefore have no any information about the total data size
+   * we are querying.
+  */
+  length: number
+
+  /** I expect the server to send the table headers as well.
+   * For relying on the data itself isn't safe, because
+   * there could be optional fields
+   * */
+  keys: (keyof T)[]
+
+  /** Chunk of data matching a given query */
+  data: T[]
+}
+
+type API = {
+  getData: ({ query:  string, from: ID, to: ID, limit: number }) => Response<Item>
+}
+
 ```
 
-### Compile and Hot-Reload for Development
+Data itself comes from Faker.
 
-```sh
-npm run dev
+The **fake server** supports 3 tables: users, tasks, posts.
+And it maps a query to fixed random seed for samples to be consistent
+between calls.
+
+
+## 2. Virtual table
+
+I'm using `useVirtualList` from VueUse to virtualize the *tbody* part of the table.
+But this particular implementation uses wrappers around the target element,
+so here we are trading off semantics.
+
+Table interface:
+```ts
+type Props = {
+  items: Item[]
+  keys: string[]
+
+  /**
+   * We have to track an event when the bottom of the table entering viewport
+   * to support lazy loading technique.
+   **/
+  trackBottom?: boolean
+
+  /** We need this state to decide whether the data is fully loaded
+   * or there are chunks waiting on the server.
+  */
+  exhausted: boolean
+}
 ```
+## 3. `History` feature
 
-### Type-Check, Compile and Minify for Production
+I've picked Pinia for the project as a stare management solution because it's easy-to-use and modern.
 
-```sh
-npm run build
-```
+The `history` feature provides a user with a sidebar showing their previous queries to switch between them at any time.
 
-### Lint with [ESLint](https://eslint.org/)
+This is implemented as a sidebar because it has higher UX than a dropdown or tabs.
 
-```sh
-npm run lint
-```
+## Performance metrics
+
+In Lighthouse the app hits only 61 points because of the FakerJS (2.5MB of minified code)
+
+With a real server it would hit 100 points.
+
+![](./page-load-metrics/Lighthouse-with-faker.png)
+![](./page-load-metrics/Lighthouse-without-faker.png)
+
+However in the more realistic tests (Chrome Performance insights) the page load is totaly ok:
+
+![](page-load-metrics/Perf-insights-with-faker.png)
+![](page-load-metrics/Perf-insights-without-faker.png)
+
+
+In-depth JSON reports can be found in [page-load-metrics](./page-load-metrics/) directory.
