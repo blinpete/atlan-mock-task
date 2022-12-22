@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import HomeView from './views/HomeView.vue'
+import Metadata from './components/Metadata.vue'
 </script>
 
 <template>
-  <!-- <header class="app-header">
-    <h1>Atlan test</h1>
-  </header> -->
   <HomeView />
-  <div class="metadata">links</div>
+  <Metadata />
 </template>
 
 <style scoped>
@@ -18,10 +16,7 @@ import HomeView from './views/HomeView.vue'
 
 .metadata {
   position: absolute;
-  top: 1em;
+  top: 0.5em;
   right: 0;
-
-  background-color: #222;
-  color: #eee;
 }
 </style>

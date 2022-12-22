@@ -93,7 +93,6 @@ async function loadChunk() {
 
   display: grid;
   grid-template-columns: 15em auto;
-  /* grid-template-rows: min-content minmax(0, 1fr); */
   grid-template-rows: min-content 1fr;
   gap: 1em;
 }

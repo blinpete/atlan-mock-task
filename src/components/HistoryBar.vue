@@ -23,7 +23,7 @@ const storeHistory = useStoreHistory()
 
 <style scoped>
 .HistoryBar {
-  background-color: hsl(242deg 80% 38%);
+  background-color: var(--c-accent);
   color: #ddf;
 }
 

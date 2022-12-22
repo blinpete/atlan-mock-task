@@ -134,7 +134,7 @@ const gridColumnsStyle = computed(() => {
 }
 
 .row:not(:last-child) {
-  border-bottom: 2px solid darkgrey;
+  border-bottom: 1.5px solid darkgrey;
 }
 
 .thead {
@@ -161,7 +161,7 @@ const gridColumnsStyle = computed(() => {
   padding: 0.2em;
 }
 
-:is(.th, .td):not(:first-child) {
+/* :is(.th, .td):not(:first-child) {
   border-left: 2px solid darkgrey;
-}
+} */
 </style>
