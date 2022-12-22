@@ -38,9 +38,9 @@ export async function request(options: RequestOptions): Response<Item> {
   }
 
   // generate length -----------------------------------
-  let resLength = __reqMap.get(options.query)
+  let queryStats = __reqMap.get(options.query)
 
-  if (resLength === undefined) {
+  if (queryStats === undefined) {
     let newLength = myFaker.datatype.number({
       min: MockSettings.ResponseSizeMin,
       max: MockSettings.ResponseSizeMax,
@@ -52,36 +52,36 @@ export async function request(options: RequestOptions): Response<Item> {
       newLength = Math.min(lengthFromQuery, MockSettings.ResponseSizeMax)
     }
 
-    resLength = {
+    queryStats = {
       total: newLength,
       remain: newLength,
       seed: myFaker.datatype.number({ min: 0, max: 1000 }),
       table: myFaker.helpers.arrayElement(tables),
     }
 
-    __reqMap.set(options.query, resLength)
+    __reqMap.set(options.query, queryStats)
   }
 
   // initial call or chunk request?
   if (!options.from) {
-    resLength.remain = resLength.total
+    queryStats.remain = queryStats.total
   }
 
-  let arrLength = resLength.remain
+  let arrLength = queryStats.remain
 
   if (options.limit && arrLength > options.limit) {
     arrLength = options.limit
   }
 
-  myFaker.seed(resLength.seed + resLength.remain)
+  myFaker.seed(queryStats.seed + queryStats.remain)
 
-  const randomizer = services[resLength.table]
+  const randomizer = services[queryStats.table]
 
   const arr = Array.from({
     length: arrLength,
   }).map(randomizer)
 
-  resLength.remain -= arrLength
+  queryStats.remain -= arrLength
 
   // not necessary, just relying on mutation
   // __reqMap.set(options.query, resLength)
@@ -90,7 +90,7 @@ export async function request(options: RequestOptions): Response<Item> {
 
   return {
     data: arr,
-    length: resLength.total,
+    length: queryStats.total,
     keys,
   }
 }
